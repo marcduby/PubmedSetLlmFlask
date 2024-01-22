@@ -1,6 +1,6 @@
 # imports
 from flask import Flask, render_template, request, flash
-from sql_utils import get_connection, get_list_abstracts, get_map_gene_abstracts
+import sql_utils 
 import ml_utils
 import web_utils
 
@@ -25,6 +25,7 @@ def submit_genes():
     name_subject = None
     name_object = None 
     debug = True
+    map_abstacts = {}
 
     if request.method == 'GET':
         input_pubmed = str(request.args.get("pmid"))
@@ -57,6 +58,9 @@ def submit_genes():
         name_object = web_utils.get_rest_name_for_curie(curie=input_object, log=debug)
 
         # retrieve the pmid abstracts
+        conn = sql_utils.get_connection()
+        # list_abstracts = get_list_abstracts(conn=conn, list_genes=list_select, log=True)
+        map_abstracts = sql_utils.get_map_abstracts(conn=conn, list_pubmed=list_pubmed, log=True)
 
         # call the LLM
 
@@ -68,6 +72,9 @@ def submit_genes():
     map_result['input_object'] = {input_object: name_object}
     map_result['errors'] = list_errors
 
+    # add abstracts if debug
+    if debug:
+        map_result['abstracts'] = list(map_abstracts.values())
 
     # return
     return map_result
