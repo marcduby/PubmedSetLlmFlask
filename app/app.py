@@ -21,11 +21,13 @@ def submit_genes():
     list_errors = []
     input_subject = None
     input_object = None
-    result_llm = None
+    pubmed_llm = None
+    generic_llm = None
     name_subject = None
     name_object = None 
-    debug = True
     map_abstracts = {}
+
+    debug = False
 
     if request.method == 'GET':
         input_pubmed = str(request.args.get("pmid"))
@@ -67,17 +69,18 @@ def submit_genes():
         for value in map_abstracts.values():
             print(value)
             list_abstracts.append(value.get('abstract'))
-        result_llm = ml_utils.call_abstract_llm_recurisve(prompt_template=ml_utils.PROMPT_PUBMED, str_subject=name_subject, str_object=name_object,
+        pubmed_llm = ml_utils.call_abstract_llm_recurisve(prompt_template=ml_utils.PROMPT_PUBMED, str_subject=name_subject, str_object=name_object,
                                                           list_abstracts=list_abstracts, log=True)
 
-        # add result
+        # call the generic llm
+        generic_llm = ml_utils.call_generic_llm_no_abstract(str_subject=name_subject, str_object=name_object)
 
     # build result
     map_result['input_pmid'] = list_pubmed
     map_result['input_subject'] = {input_subject: name_subject}
     map_result['input_object'] = {input_object: name_object}
     map_result['errors'] = list_errors
-    map_result['result_llm'] = result_llm
+    map_result['llm'] = {'pubmed': pubmed_llm, 'generic': generic_llm}
 
     # add abstracts if debug
     if debug:

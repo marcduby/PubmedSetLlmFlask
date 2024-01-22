@@ -11,8 +11,12 @@ MODEL_CHATGPT="gpt-3.5-turbo-0301"
 
 # prompts
 PROMPT_PUBMED= """
-As a biology researcher, read through the below abstracts and using only those, describe the biological association between {} and {}
+As a biology researcher, read through the below abstracts and using only those as your source, describe the biological association between {} and {}
 {}
+"""
+
+PROMPT_GENERIC= """
+As a biology researcher, describe the biological association between {} and {}
 """
 
 # PROMPT_THERAPEUTICS = """
@@ -99,6 +103,22 @@ def call_chatgpt(str_query, log=False):
 
     # return
     return str_result
+
+def call_generic_llm_no_abstract(str_subject, str_object, prompt_template=PROMPT_GENERIC, max_tokens=4000, to_shuffle=True, log=False):
+    '''
+    call chatgpt for subject/object association w/o abstracts
+    '''
+    # initialize
+    result_llm = None
+
+    # build the prompt
+    str_prompt = prompt_template.format(str_subject, str_object)
+
+    # get the llm result
+    result_llm = call_chatgpt(str_query=str_prompt)
+
+    # return
+    return result_llm
 
 
 def call_abstract_llm_recurisve(prompt_template, str_subject, str_object, list_abstracts, max_tokens=4000, to_shuffle=True, log=False):
