@@ -25,7 +25,7 @@ def submit_genes():
     name_subject = None
     name_object = None 
     debug = True
-    map_abstacts = {}
+    map_abstracts = {}
 
     if request.method == 'GET':
         input_pubmed = str(request.args.get("pmid"))
@@ -63,6 +63,12 @@ def submit_genes():
         map_abstracts = sql_utils.get_map_abstracts(conn=conn, list_pubmed=list_pubmed, log=True)
 
         # call the LLM
+        list_abstracts = []
+        for value in map_abstracts.values():
+            print(value)
+            list_abstracts.append(value.get('abstract'))
+        result_llm = ml_utils.call_abstract_llm_recurisve(prompt_template=ml_utils.PROMPT_PUBMED, str_subject=name_subject, str_object=name_object,
+                                                          list_abstracts=list_abstracts, log=True)
 
         # add result
 
@@ -71,6 +77,7 @@ def submit_genes():
     map_result['input_subject'] = {input_subject: name_subject}
     map_result['input_object'] = {input_object: name_object}
     map_result['errors'] = list_errors
+    map_result['result_llm'] = result_llm
 
     # add abstracts if debug
     if debug:
